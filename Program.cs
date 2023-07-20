@@ -12,11 +12,7 @@ namespace mongo1
         public static void Main(string[] args)
         {
             //func1();
-
             func2();
-            
-            
-        
         }   
 
 
@@ -52,49 +48,52 @@ namespace mongo1
 
         private static void func2() 
         {
-            InsertClassNames();
-
+           
             String connectionString = "mongodb://localhost:27017";
             MongoClient client = new MongoClient(connectionString);
             IMongoDatabase database = client.GetDatabase("test2");
-            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("ClassNames");
- 
+            var collection = database.GetCollection<ClassNames>("ClassNames2");
+
+            //InsertClassNames(collection);
+
+            List<ClassNames> list = GetClassNames(collection);
+
+            //print list
+            foreach (ClassNames classNames in list)
+            {
+                Console.WriteLine(classNames.ClassName + " " + classNames.Namespace);
+            }
+
+            CreateNewTable(collection, list);
+
+
         }
 
-        private static void InsertClassNames()
+        private static void CreateNewTable(IMongoCollection<ClassNames> collection, List<ClassNames> list)
         {
-            BsonDocument className1 = new BsonDocument { { "ClassName", "mongo1.Student" } };
-            BsonDocument className2 = new BsonDocument { { "ClassName", "mongo1.School" } };
-            BsonDocument className3 = new BsonDocument { { "ClassName", "mongo1.Garage" } };
-            BsonDocument className4 = new BsonDocument { { "ClassName", "mongo1.Author" } };
-            BsonDocument className5 = new BsonDocument { { "ClassName", "mongo1.City" } };
-            BsonDocument className6 = new BsonDocument { { "ClassName", "mongo1.Car" } };
+            //search for each class in the list
+            //if the class is found, add it to the new list
+            //if the class is not found,do nothing
+            //after the list is created, insert it into the new collection
 
-            List<BsonDocument> classNames = new List<BsonDocument>();
-            classNames.Add(className1);
-            classNames.Add(className2);
-            classNames.Add(className3);
-            classNames.Add(className4);
-            classNames.Add(className5);
-            classNames.Add(className6);
 
-            foreach (BsonDocument className in classNames)
+            foreach (ClassNames className in list)
             {
-                Console.WriteLine(className.GetElement("ClassName").Value);
-                Type type = Type.GetType(className.GetElement("ClassName").Value.ToString());
+                String fullName = className.Namespace + "." + className.ClassName;
+                Type type = Type.GetType(fullName);
                 if (type == null)
                 {
-                    Console.WriteLine("Class : -" + className + "- not found");
+                    Console.WriteLine("Class : -" + className.ClassName + "- not found");
                 }
                 else
                 {
-                    Console.WriteLine("Class : -" + className + "- found");
+                    Console.WriteLine("Class : -" + className.ClassName + "- found");
                 }
 
             }
 
             Type type1 = Type.GetType("asdfasdfd");
-            if(type1 == null)
+            if (type1 == null)
             {
                 Console.WriteLine("Class : -" + "RandomClass" + "- not found");
             }
@@ -105,6 +104,105 @@ namespace mongo1
 
 
             Console.WriteLine("End of InsertClassNames()");
+
+
+
+
+        }
+
+        private static List<ClassNames> GetClassNames (IMongoCollection<ClassNames> collection)
+        {
+            var documents = collection.Find(new BsonDocument()).ToList();
+
+            List<ClassNames> classNamesList = new List<ClassNames>();
+
+            foreach (var document in documents)
+            {
+                ClassNames classNames = new ClassNames { ClassName = document.ClassName, Namespace = document.Namespace };
+                classNamesList.Add(classNames);
+                Console.WriteLine("=="+classNames.ClassName + " " + classNames.Namespace);
+            }
+
+            //var filter = Builders<ClassNames>.Filter.Empty;
+            //List<ClassNames> list2 = collection.Find(filter).ToList();
+
+            ////print list
+            //foreach (ClassNames classNames in list2)
+            //{
+            //    Console.WriteLine("++" + classNames.ClassName + " " + classNames.Namespace);
+            //}
+
+            return classNamesList;
+        }
+
+        private static void InsertClassNames(IMongoCollection<ClassNames> collection)
+        {
+            ClassNames classNames1 = new ClassNames { ClassName = "Student", Namespace = "mongo1" };
+            ClassNames classNames2 = new ClassNames { ClassName = "School", Namespace = "mongo1" };
+            ClassNames classNames3 = new ClassNames { ClassName = "Garage", Namespace = "mongo1" };
+            ClassNames classNames4 = new ClassNames { ClassName = "Author", Namespace = "mongo1" };
+            ClassNames classNames5 = new ClassNames { ClassName = "City", Namespace = "mongo1" };
+            ClassNames classNames6 = new ClassNames { ClassName = "Car", Namespace = "mongo1" };
+
+            List<ClassNames> classNamesList = new List<ClassNames>();
+
+            classNamesList.Add(classNames1);
+            classNamesList.Add(classNames2);
+            classNamesList.Add(classNames3);
+            classNamesList.Add(classNames4);
+            classNamesList.Add(classNames5);
+            classNamesList.Add(classNames6);
+
+            //insert documents
+            foreach (ClassNames classNames in classNamesList)
+            {
+                collection.InsertOne(classNames);
+            }
+
+
+
+            //BsonDocument className1 = new BsonDocument { { "ClassName", "mongo1.Student" } };
+            //BsonDocument className2 = new BsonDocument { { "ClassName", "mongo1.School" } };
+            //BsonDocument className3 = new BsonDocument { { "ClassName", "mongo1.Garage" } };
+            //BsonDocument className4 = new BsonDocument { { "ClassName", "mongo1.Author" } };
+            //BsonDocument className5 = new BsonDocument { { "ClassName", "mongo1.City" } };
+            //BsonDocument className6 = new BsonDocument { { "ClassName", "mongo1.Car" } };
+
+            //List<BsonDocument> classNames = new List<BsonDocument>();
+            //classNames.Add(className1);
+            //classNames.Add(className2);
+            //classNames.Add(className3);
+            //classNames.Add(className4);
+            //classNames.Add(className5);
+            //classNames.Add(className6);
+
+            //foreach (BsonDocument className in classNames)
+            //{
+            //    Console.WriteLine(className.GetElement("ClassName").Value);
+            //    Type type = Type.GetType(className.GetElement("ClassName").Value.ToString());
+            //    if (type == null)
+            //    {
+            //        Console.WriteLine("Class : -" + className + "- not found");
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("Class : -" + className + "- found");
+            //    }
+
+            //}
+
+            //Type type1 = Type.GetType("asdfasdfd");
+            //if(type1 == null)
+            //{
+            //    Console.WriteLine("Class : -" + "RandomClass" + "- not found");
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Class : -" + "RandomClass" + "- found");
+            //}
+
+
+            //Console.WriteLine("End of InsertClassNames()");
         }
 
         private static void ListCollections(IMongoDatabase database)
