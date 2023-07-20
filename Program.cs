@@ -92,21 +92,6 @@ namespace mongo1
 
             }
 
-            Type type1 = Type.GetType("asdfasdfd");
-            if (type1 == null)
-            {
-                Console.WriteLine("Class : -" + "RandomClass" + "- not found");
-            }
-            else
-            {
-                Console.WriteLine("Class : -" + "RandomClass" + "- found");
-            }
-
-
-            Console.WriteLine("End of InsertClassNames()");
-
-
-
 
         }
 
