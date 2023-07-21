@@ -61,10 +61,13 @@ namespace mongo1
             //print list
             foreach (ClassNames classNames in list)
             {
-                Console.WriteLine(classNames.ClassName + " " + classNames.Namespace);
+                //Console.WriteLine(classNames.ClassName + " " + classNames.Namespace);
             }
 
-            CreateNewTable(collection, list);
+            //create new collection
+            IMongoCollection<ClassNames> collectionWithProperties = database.GetCollection<ClassNames>("ClassNamesWithProperties");
+
+            CreateNewTable(collectionWithProperties, list);
 
 
         }
@@ -88,9 +91,23 @@ namespace mongo1
                 else
                 {
                     Console.WriteLine("Class : -" + className.ClassName + "- found");
+                    List<PropertyInfo> propertyList = new List<PropertyInfo>();
+                    ClassEntry Entry = new ClassEntry();
+                    propertyList = type.GetProperties().ToList();
+                    
+                    foreach (PropertyInfo property in propertyList)
+                    {
+                        Console.WriteLine(property.Name + " " + property.PropertyType);
+                        Entry.ClassName = className.ClassName;
+                        Entry.Namespace = className.Namespace;
+                        Entry.types.Add((property.Name, property.PropertyType.Name));
+                    }
+                    collection.InsertOne(Entry);
                 }
-
+                Console.WriteLine("-------------------------------------------------");
             }
+
+
 
 
         }
@@ -105,7 +122,7 @@ namespace mongo1
             {
                 ClassNames classNames = new ClassNames { ClassName = document.ClassName, Namespace = document.Namespace };
                 classNamesList.Add(classNames);
-                Console.WriteLine("=="+classNames.ClassName + " " + classNames.Namespace);
+                //Console.WriteLine("=="+classNames.ClassName + " " + classNames.Namespace);
             }
 
             //var filter = Builders<ClassNames>.Filter.Empty;
