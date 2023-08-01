@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ersel\\Desktop\\digi\\test1\\mongo1\\mongo1.csproj": {}
+    "C:\\Users\\ersel\\source\\repos\\GetClassPropertiesWithMongoDB\\mongo1.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ersel\\Desktop\\digi\\test1\\mongo1\\mongo1.csproj": {
+    "C:\\Users\\ersel\\source\\repos\\GetClassPropertiesWithMongoDB\\mongo1.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ersel\\Desktop\\digi\\test1\\mongo1\\mongo1.csproj",
+        "projectUniqueName": "C:\\Users\\ersel\\source\\repos\\GetClassPropertiesWithMongoDB\\mongo1.csproj",
         "projectName": "mongo1",
-        "projectPath": "C:\\Users\\ersel\\Desktop\\digi\\test1\\mongo1\\mongo1.csproj",
+        "projectPath": "C:\\Users\\ersel\\source\\repos\\GetClassPropertiesWithMongoDB\\mongo1.csproj",
         "packagesPath": "C:\\Users\\ersel\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ersel\\Desktop\\digi\\test1\\mongo1\\obj\\",
+        "outputPath": "C:\\Users\\ersel\\source\\repos\\GetClassPropertiesWithMongoDB\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
           "C:\\Users\\ersel\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,7 +22,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "C:\\Program Files\\dotnet\\sdk\\7.0.306\\Sdks\\Microsoft.NET.Sdk.Web\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
@@ -46,6 +41,26 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[7.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[7.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[7.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[7.0.9, )"
+            },
             "MongoDB.Bson": {
               "target": "Package",
               "version": "[2.20.0, )"
@@ -57,6 +72,10 @@
             "MongoDB.Driver.Core": {
               "target": "Package",
               "version": "[2.20.0, )"
+            },
+            "System.Data.SqlClient": {
+              "target": "Package",
+              "version": "[4.8.5, )"
             }
           },
           "imports": [

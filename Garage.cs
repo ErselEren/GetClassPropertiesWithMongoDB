@@ -1,4 +1,6 @@
-﻿namespace mongo2
+﻿using mongo1;
+
+namespace mongo2
 {
     public class Garage
     {
@@ -6,7 +8,15 @@
 
         public String address { get; set; }
 
+        public City getCityOfGarage()
+        {
+            return City;
+        }
 
-
+        public void setCityOfGarage(City city)
+        {
+            City = city;
+        }
+        
     }
 }

@@ -3,22 +3,249 @@ using MongoDB.Bson;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
-
+using System.Data.SqlClient;
+using System.Collections;
+using Microsoft.EntityFrameworkCore;
+using mongo1;
+using mongo1.MSSQL_Classes;
 
 namespace mongo1
 {
+    
     public class Program
     {
+        private static IList<Classes> classTable;
+        private static IList<ClassNames> listOfClassNames;
+        private static IList<Methods> MethodTable;
+        private static IList<Parameters> listOfParameters;
+        private static IList<ParameterTypes> listOfParameterTypes;
+        //private static IList<ReturnTypes> listOfReturnTypes;
+        private static int counter = 0;
+
         public static void Main(string[] args)
         {
-            func2();
-        }   
 
-        private static void func2() 
+            listOfClassNames = func2();
+            MethodTable = new List<Methods>();
+            listOfParameters = new List<Parameters>();
+            listOfParameterTypes = new List<ParameterTypes>();
+            //listOfReturnTypes = new List<ReturnTypes>();
+            classTable = new List<Classes>();
+
+
+            for(int i = 0; i < listOfClassNames.Count; i++)
+            {
+                func4(listOfClassNames[i].Namespace, listOfClassNames[i].ClassName);
+            }
+
+            func3();
+
+
+            Console.WriteLine("!!!!!!! --- END OF MAIN --- !!!!!!!!");
+            Console.ReadLine();
+        }
+
+        private static void func4(String classNamespace, String className)
+        {   
+                string fullClassName = classNamespace + "." + className;
+                Type type = Type.GetType(fullClassName);
+                
+                if (type == null) return;
+                
+                else
+                {
+                    if (checkExist(classTable, className) == false) return;
+                    
+                    Classes newClass = new Classes(className);
+                    classTable.Add(newClass);
+                                        
+                    MethodInfo[] myArrayMethodInfo = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(method => !method.IsSpecialName).ToArray();
+                    
+                    // Get eacg method from the class
+                    foreach (MethodInfo myMethodInfo in myArrayMethodInfo)
+                    {
+                        Methods methodsTableItem = new Methods(myMethodInfo.Name, newClass, myMethodInfo.ReturnType.Name);
+                        MethodTable.Add(methodsTableItem);
+                        
+
+                        //Get each parameter from the method
+                        foreach (ParameterInfo param in myMethodInfo.GetParameters())
+                        {
+                            Console.WriteLine("Method Name : "+ myMethodInfo.Name +" || Parameter name: " + param.Name + " || ParameterType: " + param.ParameterType.ToString());
+                            
+                            ParameterTypes parameterTypesTableItem = new ParameterTypes(param.ParameterType.ToString());
+                            Parameters parameterTableItem = new Parameters(parameterTypesTableItem, methodsTableItem,param.Name);
+                            
+                            
+                            int resultOfCheck = checkParameterExist(listOfParameterTypes, param.ParameterType.ToString());
+                            if (resultOfCheck != -1)
+                            {
+                                parameterTypesTableItem = listOfParameterTypes[resultOfCheck];
+                                parameterTableItem.parameterType = parameterTypesTableItem;
+                                Console.WriteLine(">>>"+param.ParameterType.ToString()+" " + listOfParameterTypes[resultOfCheck].Name);
+                            }
+                            else
+                            {
+                                Console.WriteLine("<<<" + param.ParameterType.ToString());
+                            }
+
+
+                            if (param.ParameterType.IsPrimitive == true || param.ParameterType.ToString().Equals("System.String"))
+                            {
+                                Console.WriteLine("Primitive");
+
+
+                                listOfParameters.Add(parameterTableItem);
+                                listOfParameterTypes.Add(parameterTypesTableItem);
+                            }
+                            else
+                            {
+                            
+                                Console.WriteLine("Not Primitive > " + param.ParameterType.Name.ToString());
+                                listOfParameters.Add(parameterTableItem);
+                                 
+                                ClassNames recursiveItem = new ClassNames();
+                                
+    
+                                func4("", param.ParameterType.Name.ToString());
+
+                                listOfParameterTypes.Add(parameterTypesTableItem);
+                            }
+                            
+                        }
+
+                    }
+                    Console.WriteLine("-----------------------------------------");
+                }
+
+            
+   
+        }
+
+        private static int checkParameterExist(IList<ParameterTypes> parameterTypesTable, string paramTypeName)
         {
-           
-            String connectionString = "mongodb://localhost:27017";
-            MongoClient client = new MongoClient(connectionString);
+            for (int i = 0; i < parameterTypesTable.Count; i++)
+            {
+                if (parameterTypesTable[i].Name.Equals(paramTypeName))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static bool checkExist(IList<Classes> classTable,string ClassName)
+        {
+            for (int i = 0; i < classTable.Count; i++)
+            {
+                if (classTable[i].Name.Equals(ClassName))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static void handleRelational()
+        {
+
+            string connString = @"Server=localhost,1433;Database=CLASSES;User ID=sa;Password=password";
+            //string query = @"SELECT * FROM Student";
+
+            SqlConnection sqlConnection = new SqlConnection(connString);
+            string query = @"create table classNamespaces(
+                                namespaceId int,
+                                name VARCHAR(50),
+                                primary key(namespaceId)
+                            );";
+            //SqlCommand cmd = sqlConnection.CreateCommand();
+            SqlCommand cmd = new SqlCommand(query, sqlConnection);
+
+            sqlConnection.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+
+
+        }
+
+        private static SqlCommand getSqlCommand()
+        {
+            string connString = @"Server=localhost,1433;Database=CLASSES;User ID=sa;Password=password";
+            string query = @"SELECT * FROM Student";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    //access SQL Server and run your command
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    conn.Open();
+                    SqlDataReader dr = cmd.ExecuteReader();
+
+                    //check if there are records
+                    if (dr.HasRows)
+                    {
+                        while (dr.Read())
+                        {
+                            //display retrieved record (first column only/string value)
+                            Console.WriteLine(dr.GetInt32(0));
+                            Console.WriteLine(dr.GetString(1));
+                            Console.WriteLine(dr.GetInt32(2));
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No data found.");
+                    }
+                    dr.Close();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                //display error message
+                Console.WriteLine("Exception: " + ex.Message);
+            }
+
+            return null;
+        }
+
+        private static void executeQuery(string query,string conn)
+        {
+
+        }
+
+        private static void func3()
+        {
+            
+            string connString = @"Server=localhost,1433;Database=CLASSES;User ID=sa;Password=password;Encrypt=False;";
+
+            var options = new DbContextOptionsBuilder<MyDbContext>().UseSqlServer(connString).Options;
+
+            using (var dbContext = new MyDbContext(options))
+            {
+                dbContext.Database.EnsureDeleted();
+                dbContext.Database.EnsureCreated();
+
+
+                dbContext.AddRange(classTable);
+                dbContext.SaveChanges();
+
+                dbContext.AddRange(MethodTable);
+                dbContext.SaveChanges();
+
+                dbContext.AddRange(listOfParameterTypes);
+                dbContext.SaveChanges();
+
+                dbContext.AddRange(listOfParameters);
+                dbContext.SaveChanges();
+            }
+        }
+
+        private static List<ClassNames> func2() 
+        {
+            MongoClient client = new MongoClient("mongodb://localhost:27017");
             IMongoDatabase database = client.GetDatabase("test2");
             var collection = database.GetCollection<ClassNames>("ClassNames2");
 
@@ -29,12 +256,13 @@ namespace mongo1
             //create new collection
             IMongoCollection<ClassNames> collectionWithProperties = database.GetCollection<ClassNames>("ClassNamesWithProperties");
 
-            CreateNewTable(collectionWithProperties, list);
+            //CreateNewMongoTable(collectionWithProperties, list);
 
+            return list;
 
         }
 
-        private static void CreateNewTable(IMongoCollection<ClassNames> collection, List<ClassNames> list)
+        private static void CreateNewMongoTable(IMongoCollection<ClassNames> collection, List<ClassNames> list)
         {
             //search for each class in the list
             //if the class is found, add it to the new list

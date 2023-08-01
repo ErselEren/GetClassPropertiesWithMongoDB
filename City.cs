@@ -6,6 +6,15 @@
         public String Name { get; set; }
         public int Population { get; set; }
 
+        public int getPopulation()
+        {
+            return 0;
+        }
+
+        public int getPopulation(String name)
+        {
+            return 0;
+        }
 
     }
 }

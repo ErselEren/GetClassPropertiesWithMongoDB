@@ -10,6 +10,20 @@
 
         public String color { get; set; }
 
+        public void printCarInfo()
+        {
+          
+        }
+
+        public void printCarInfo(String brand, String model, int year, String color)
+        {
+          
+        }
+
+        public String getCarBrandName()
+        {
+            return "";
+        }
 
     }
 }
