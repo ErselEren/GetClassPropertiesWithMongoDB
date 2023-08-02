@@ -137,9 +137,15 @@ namespace mongo1
 
         private static bool checkExist(IList<Classes> classTable,string ClassName)
         {
+
+            //if (classTable.Any(x=>x.Name == ClassName))
+            //{
+
+            //}
+
             for (int i = 0; i < classTable.Count; i++)
             {
-                if (classTable[i].Name.Equals(ClassName))
+                if (classTable[i].Name==ClassName)
                 {
                     return false;
                 }
