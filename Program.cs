@@ -14,112 +14,96 @@ namespace mongo1
     
     public class Program
     {
-        private static IList<Classes> classTable;
         private static IList<ClassNames> listOfClassNames;
+        private static IList<Classes> classTable;
         private static IList<Methods> MethodTable;
-        private static IList<Parameters> listOfParameters;
-        private static IList<ParameterTypes> listOfParameterTypes;
-        //private static IList<ReturnTypes> listOfReturnTypes;
-        private static int counter = 0;
-
+        private static IList<Parameters> ParametersTable;
+        private static IList<ParameterTypes> ParameterTypesTable;
+       
         public static void Main(string[] args)
         {
 
-            listOfClassNames = func2();
+            listOfClassNames = GetClassesFromMongo();
             MethodTable = new List<Methods>();
-            listOfParameters = new List<Parameters>();
-            listOfParameterTypes = new List<ParameterTypes>();
-            //listOfReturnTypes = new List<ReturnTypes>();
+            ParametersTable = new List<Parameters>();
+            ParameterTypesTable = new List<ParameterTypes>();
             classTable = new List<Classes>();
 
 
             for(int i = 0; i < listOfClassNames.Count; i++)
             {
-                func4(listOfClassNames[i].Namespace, listOfClassNames[i].ClassName);
+                fill_MSSQL_tables(listOfClassNames[i].Namespace, listOfClassNames[i].ClassName);
             }
 
-            func3();
+            writeTable();
 
 
             Console.WriteLine("!!!!!!! --- END OF MAIN --- !!!!!!!!");
             Console.ReadLine();
         }
 
-        private static void func4(String classNamespace, String className)
+        private static void fill_MSSQL_tables(String classNamespace, String className)
         {   
-                string fullClassName = classNamespace + "." + className;
-                Type type = Type.GetType(fullClassName);
+            string fullClassName = classNamespace + "." + className;
+            //if first char is dot, remove it
+            if (fullClassName[0] == '.')
+            {
+                fullClassName = fullClassName.Substring(1);
+            }
+            
+            Console.WriteLine(fullClassName);    
+            Type type = Type.GetType(fullClassName);
                 
-                if (type == null) return;
-                
-                else
-                {
-                    if (checkExist(classTable, className) == false) return;
+            if (type == null) //Class not found
+              return;
+               
+            if (checkExist(classTable, className) == false) //Class already exist in table
+              return;
                     
-                    Classes newClass = new Classes(className);
-                    classTable.Add(newClass);
+            Classes newClass = new Classes(className);
+            classTable.Add(newClass); //Add class to table if not exist
                                         
-                    MethodInfo[] myArrayMethodInfo = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(method => !method.IsSpecialName).ToArray();
-                    
-                    // Get eacg method from the class
-                    foreach (MethodInfo myMethodInfo in myArrayMethodInfo)
-                    {
-                        Methods methodsTableItem = new Methods(myMethodInfo.Name, newClass, myMethodInfo.ReturnType.Name);
-                        MethodTable.Add(methodsTableItem);
+            //Get method info
+            MethodInfo[] MethodInfoArr = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(method => !method.IsSpecialName).ToArray();
+                             
+            foreach (MethodInfo method in MethodInfoArr) // Get each method from the class
+      {
+                Methods methodTableItem = new Methods(method.Name, newClass, method.ReturnType.Name);
+                MethodTable.Add(methodTableItem);
                         
-
-                        //Get each parameter from the method
-                        foreach (ParameterInfo param in myMethodInfo.GetParameters())
-                        {
-                            Console.WriteLine("Method Name : "+ myMethodInfo.Name +" || Parameter name: " + param.Name + " || ParameterType: " + param.ParameterType.ToString());
-                            
-                            ParameterTypes parameterTypesTableItem = new ParameterTypes(param.ParameterType.ToString());
-                            Parameters parameterTableItem = new Parameters(parameterTypesTableItem, methodsTableItem,param.Name);
-                            
-                            
-                            int resultOfCheck = checkParameterExist(listOfParameterTypes, param.ParameterType.ToString());
-                            if (resultOfCheck != -1)
-                            {
-                                parameterTypesTableItem = listOfParameterTypes[resultOfCheck];
-                                parameterTableItem.parameterType = parameterTypesTableItem;
-                                Console.WriteLine(">>>"+param.ParameterType.ToString()+" " + listOfParameterTypes[resultOfCheck].Name);
-                            }
-                            else
-                            {
-                                Console.WriteLine("<<<" + param.ParameterType.ToString());
-                            }
-
-
-                            if (param.ParameterType.IsPrimitive == true || param.ParameterType.ToString().Equals("System.String"))
-                            {
-                                Console.WriteLine("Primitive");
-
-
-                                listOfParameters.Add(parameterTableItem);
-                                listOfParameterTypes.Add(parameterTypesTableItem);
-                            }
-                            else
-                            {
-                            
-                                Console.WriteLine("Not Primitive > " + param.ParameterType.Name.ToString());
-                                listOfParameters.Add(parameterTableItem);
-                                 
-                                ClassNames recursiveItem = new ClassNames();
-                                
-    
-                                func4("", param.ParameterType.Name.ToString());
-
-                                listOfParameterTypes.Add(parameterTypesTableItem);
-                            }
-                            
-                        }
-
+                //Get each parameter from the method
+                foreach (ParameterInfo param in method.GetParameters())
+                {
+          
+                    ParameterTypes parameterTypesTableItem = new ParameterTypes(param.ParameterType.ToString());
+                    Parameters parameterTableItem = new Parameters(parameterTypesTableItem, methodTableItem,param.Name);
+                                                       
+                    int resultOfCheck = checkParameterExist(ParameterTypesTable, param.ParameterType.ToString());
+                    if (resultOfCheck != -1)
+                    {
+                        parameterTypesTableItem = ParameterTypesTable[resultOfCheck];
+                        parameterTableItem.parameterType = parameterTypesTableItem;
                     }
-                    Console.WriteLine("-----------------------------------------");
+                    
+                    
+                    if (param.ParameterType.IsPrimitive == true || param.ParameterType.ToString().Equals("System.String"))
+                    {
+                        ParametersTable.Add(parameterTableItem);
+                        ParameterTypesTable.Add(parameterTypesTableItem);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Class: " + param.ParameterType.Namespace);
+                        
+                        ParametersTable.Add(parameterTableItem);
+                        ClassNames recursiveItem = new ClassNames();
+                        fill_MSSQL_tables(param.ParameterType.Namespace.ToString(),param.ParameterType.Name.ToString());
+                        ParameterTypesTable.Add(parameterTypesTableItem);
+                    }
+                            
                 }
 
-            
-   
+            }
         }
 
         private static int checkParameterExist(IList<ParameterTypes> parameterTypesTable, string paramTypeName)
@@ -217,12 +201,7 @@ namespace mongo1
             return null;
         }
 
-        private static void executeQuery(string query,string conn)
-        {
-
-        }
-
-        private static void func3()
+        private static void writeTable()
         {
             
             string connString = @"Server=localhost,1433;Database=CLASSES;User ID=sa;Password=password;Encrypt=False;";
@@ -234,22 +213,21 @@ namespace mongo1
                 dbContext.Database.EnsureDeleted();
                 dbContext.Database.EnsureCreated();
 
-
                 dbContext.AddRange(classTable);
                 dbContext.SaveChanges();
 
                 dbContext.AddRange(MethodTable);
                 dbContext.SaveChanges();
 
-                dbContext.AddRange(listOfParameterTypes);
+                dbContext.AddRange(ParameterTypesTable);
                 dbContext.SaveChanges();
 
-                dbContext.AddRange(listOfParameters);
+                dbContext.AddRange(ParametersTable);
                 dbContext.SaveChanges();
             }
         }
 
-        private static List<ClassNames> func2() 
+        private static List<ClassNames> GetClassesFromMongo() 
         {
             MongoClient client = new MongoClient("mongodb://localhost:27017");
             IMongoDatabase database = client.GetDatabase("test2");

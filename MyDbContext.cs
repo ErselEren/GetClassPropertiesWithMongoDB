@@ -9,12 +9,9 @@ public class MyDbContext : DbContext
 
     public DbSet<Methods> Methods { get; set; }
 
-    //public DbSet<ReturnTypes> ReturnTypes { get; set; }
-
     public DbSet<Parameters> Parameters { get; set; }
 
     public DbSet<ParameterTypes> ParameterTypes { get; set; }
-
 
 
     public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
@@ -36,9 +33,6 @@ public class MyDbContext : DbContext
 
         modelBuilder.Entity<Methods>()
         .HasKey(m => m.MethodId); // Define 'Id' as the primary key for the 'Methods' entity
-
-        //modelBuilder.Entity<ReturnTypes>()
-        //.HasKey(r => r.ReturnTypeId); // Define 'Id' as the primary key for the 'ReturnTypes' entity
 
         modelBuilder.Entity<Parameters>()
         .HasKey(p => p.ParamId); // Define 'Id' as the primary key for the 'Parameters' entity

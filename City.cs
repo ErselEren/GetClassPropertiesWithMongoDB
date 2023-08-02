@@ -11,10 +11,12 @@
             return 0;
         }
 
-        public int getPopulation(String name)
+        public int getPopulation(String name , Car Car)
         {
             return 0;
         }
+
+         
 
     }
 }

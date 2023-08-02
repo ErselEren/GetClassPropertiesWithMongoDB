@@ -7,13 +7,6 @@
 
         }
 
-        //public Methods(string name, Classes c, ReturnTypes returnType)
-        //{
-        //    MethodName = name;
-        //    className = c;
-        //    returnType = returnType;
-        //}
-
         public Methods(string name, Classes c, string returnType)
         {
             MethodName = name;
@@ -29,9 +22,6 @@
         
         public string ReturnTypeName { get; set; }
         
-        //public int ReturnTypeId { get; set; }
-
-        //public ReturnTypes returnType { get; set; }
         public Classes className { get; set; }
 
         public List<Parameters> Parameters { get; set; }
